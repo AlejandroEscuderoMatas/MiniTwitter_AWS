@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+      crossorigin="anonymous"
+    />
+    <title>Your Wall</title>
+    <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+
+    <script>
+
+    $(document).ready(function() {
+        var user=getCookie("userName");
+
+        if(user != null){
+
+          var sendPost=$.post(
+            "https://yoloxtglutrt2hquhzcsj5qaxq0rowjd.lambda-url.us-east-1.on.aws/",
+
+            {user: user},
+
+            function(data) {
+
+              // function jsonEscape(str)  {
+              //          return str.replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t").replace(/\\/g,"");
+              // }
+              var json=data;
+
+              var ul = document.getElementById("comment_list");
+
+              for (let i in json.posts) {
+                
+                let li = document.createElement("li");
+
+                let user_followed=document.createElement("p");
+                user_followed.innerText= "@" + json.posts[i].user_followed;
+
+                let comment=document.createElement("p");
+                comment.innerText= json.posts[i].user_followed+" dice:"+json.posts[i].comment;
+                let media = createMediaElement(json.posts[i].attachments);
+
+                let likes=document.createElement("p");
+                likes.innerText = "Likes: " + json.posts[i].likes;
+
+                let dislikes=document.createElement("p");
+                dislikes.innerText = "Dislikes: " + json.posts[i].dislikes;
+
+                let division = document.createElement("hr");
+
+                let buttonLike = document.createElement("button");
+                buttonLike.innerHTML = "Like";
+                $(buttonLike).attr("name", json.posts[i].id_comm);
+                $(buttonLike).attr("class", "btn btn-success btn-lg btn-block");
+                $(buttonLike).attr("onclick", "updateVotes(" + buttonLike.name + ", 1)");
+
+                let buttonDislike = document.createElement("button");
+                buttonDislike.innerHTML = "Dislike";
+                $(buttonDislike).attr("name", json.posts[i].id_comm);
+                $(buttonDislike).attr("class", "btn btn-danger btn-lg btn-block");
+                $(buttonDislike).attr("onclick", "updateVotes(" + buttonDislike.name + ", -1 )");
+
+                //<button onclick="getElementById('demo').innerHTML = Date()">What is the time?</button>
+                
+                ul.appendChild(li);
+                li.appendChild(user_followed);
+                li.appendChild(comment);
+                li.appendChild(media);
+                li.appendChild(likes);
+                li.appendChild(dislikes);
+                li.appendChild(buttonLike);
+                li.appendChild(buttonDislike);
+                li.appendChild(division);
+              }
+            }
+          )  
+        }
+        else{
+          location.replace("login.html");
+        }
+        
+    });
+
+    function updateVotes(id_comm, vote)
+    {
+      var userName=getCookie("userName");
+
+      var sendPost=$.post(
+      "https://67uqym3pwgjxgtmxffvp7fhjhi0vetba.lambda-url.us-east-1.on.aws/",
+
+          { userName: userName, id_comm : id_comm, vote : vote },
+      )
+      .done(function() {
+          alert("Vote sent");
+          location.replace("readPosts.html");
+      })
+      .fail(function(xhr, status, error) {
+          alert( error );
+      });
+    }
+    /*function updateVotes(event)
+    {
+      alert(event);
+    }*/
+
+    function getCookie(name) {
+      var value = "; " + document.cookie;
+      var parts = value.split("; " + name + "=");
+      if (parts.length == 2) return parts.pop().split(";").shift();
+    }
+
+    function setCookie(name, value, hours) {
+      var d = new Date();
+      d.setTime(d.getTime() + (hours*60*60*1000));
+      var expires = "expires="+ d.toUTCString();
+      document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    function createMediaElement(path) {
+      var extension = path.split(".").pop();
+      var mediaElement;
+
+      if (extension === "mp4") {
+        mediaElement = document.createElement("video");
+        mediaElement.setAttribute("width", "320");
+        mediaElement.setAttribute("height", "320");
+        mediaElement.setAttribute("controls", "");
+
+        var source = document.createElement("source");
+        source.setAttribute("src", path);
+        source.setAttribute("type", "video/mp4");
+
+        mediaElement.appendChild(source);
+      } else if (extension === "jpg" || extension === "png") {
+        mediaElement = document.createElement("img");
+        mediaElement.setAttribute("src", path);
+        mediaElement.setAttribute("width", "320");
+        mediaElement.setAttribute("height", "320");
+      }
+
+      return mediaElement;
+    }
+
+    function myProfile()
+    {
+        location.replace("readPosts.html");
+    }
+ 
+    </script>
+
+</head>
+
+<body>
+  <section style="background-color: #eee;">
+    <div class="container py-5">
+      <div class="row">
+        <div class="col">
+          <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item active" aria-current="page">Your Wall</li>
+            </ol>
+            <hr>
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item active" aria-current="page">
+                <button id="filterButton" class="btn btn-primary" onclick="myProfile()" type="submit">My Profile</button>
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+  
+      <div class="row">
+        <div class="col-lg-8">
+
+          <ul id="comment_list"></ul>
+          
+        </div>
+      </div>
+    </div>
+
+    
+  </section>
+</body>
